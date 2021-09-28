@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dictionary | Search A Word</title>
+
+    <style>
+        * {
+            margin: 0px;
+            padding: 0px;
+            font-family: Helvetica;
+        }
+
+        .getWord {
+            display: flex;
+            padding: 10px;
+            /* background-color: green; */
+            justify-content: center;
+            align-items: center;
+        }
+
+        .getWord input {
+            width: 50%;
+            padding: 10px;
+            border-radius: 10px;
+            border: none;
+            background-color: transparent;
+            outline: none;
+            box-shadow: 0px 1px 5px .45px #000;
+        }
+
+        .getWord button {
+            width: 100px;
+            padding: 10px;
+            margin-lefT: 10px;
+            border-radius: 10px;
+            border: 1px solid #000;
+            cursor: pointer;
+            background-color: transparent;
+            outline: none;
+            font-weight: bolder;
+            box-shadow: 0px 1px 5px .45px #000;
+        }
+
+        .main {
+            display: flex;
+            /* border:1px solid #000; */
+            width: 90%;
+            margin: 100px auto;
+            justify-content: center;
+            align-items: center;
+            padding: 30px;
+        }
+
+        .parent {
+            margin-top: 10px;
+        }
+
+        .title .text {
+            font-style: italic;
+            line-height: 30px;
+        }
+
+        .body {
+            line-height: 50px;
+        }
+
+        .body .origin {
+            line-height: 20px;
+        }
+
+        .body .bold {
+            font-weight: bolder;
+        }
+
+        .show {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            border: 2px solid #000;
+            border-right-color: transparent;
+            animation: rotateLoad 1s linear infinite;
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            margin: auto;
+            transform: translateY(-50%);
+        }
+
+        @keyframes rotateLoad {
+            from {
+                transform: rotate(0deg);
+            }
+
+            to {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.js"
+        integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk=" crossorigin="anonymous"></script>
+</head>
+
+<body>
+
+    <div class="loader "></div>
+
+    <div class="getWord">
+        <input type="text" class="word" />
+        <button onclick="getTheInfo();" class="btn">Get Info</button>
+    </div>
+
+    <div class="main">
+
+    </div>
+
+    
+
+    <script>
+
+        let gotWord = document.querySelector('.word');
+        let loader = document.querySelector('.loader');
+
+        $(document).ready(function () {
+
+            document.addEventListener('keypress', (e) => {
+                if (e.which == 13) {
+                    getTheInfo();
+                    loader.classList.add('show');
+                }
+            });
+        });
+
+        function getTheInfo() {
+            console.log(gotWord.value);
+            
+            loader.classList.add('show');
+            $.ajax({
+                url: `https://api.dictionaryapi.dev/api/v2/entries/en/${gotWord.value}`,
+
+                success: (res) => {
+                    gotWord.value = "";        
+                    loader.classList.remove('show');
+                    console.log(res[0]);
+                    let str = ``;
+
+                    for (let val in res) {
+                        // console.log(res[val].phonetics[val].audio.slice(2,res[val].phonetics[val].audio.length));
+                        
+                        str +=
+                            `
+                        <div class="parent">
+                            <div class="title">
+                                <h1 class="word">${res[val].word}</h1>
+                                <p class="text">${res[val].phonetic}</p>
+                                <audio controls>
+                                    <source id="audioSrc" src="https://${res[val].phonetics[val].audio.slice(2,res[val].phonetics[val].audio.length)}" type="audio/ogg">
+                                    Your browser does not support the audio tag.
+                                </audio>
+                            </div>
+
+                            <div class="body">
+                                <p class="origin"><span class="bold">Origin :</span> ${res[val].origin}</p>
+                                <p class="origin"><span class="bold">Definition :</span> ${res[val].meanings[val]}</p>
+                            </div>
+                        </div>
+                        ` ;
+                    }
+
+                    $('.main').html(str);
+                },
+                error: (err) =>
+                {
+                    if(err.status == 404)
+                    {
+                        loader.classList.remove('show');
+                        $('.main').html(`<h1>Nothing found related to :${gotWord.value}</h1>`);
+                    }
+                }
+            });
+
+            let audioSrc = document.querySelector('#audioSrc');
+        }
+
+    </script>
+
+</body>
+
+</html>
